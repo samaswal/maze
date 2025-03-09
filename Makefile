@@ -1,4 +1,4 @@
 all:
-	gcc main.c -o main -lncurses
+	gcc -Wall -Wextra -Werror main.c -o maze -lncurses
 clean:
 	rm -rf main
