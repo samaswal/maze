@@ -134,16 +134,21 @@ int get_user_input(int argc, char *argv[], MazeInfo *m_info) {
         int row = 0, col = 0;
         if(res == OK) {
           printf("Enter new maze rows number:\n");
-          scanf("%d", &row);
+          char nm[10];
+          fgets(nm, 10, stdin);
+          row = atoi(nm);
           while(row < 4 || row > 50) {
-            printf("Rows number should be 4 to 50!\n");
-            scanf("%d", &row);
+            printf("Rows number should be from 4 to 50!\n");
+            fgets(nm, 10, stdin);
+            row = atoi(nm);
           }
           printf("Enter new maze columns number:\n");
-          scanf("%d", &col);
+          fgets(nm, 10, stdin);
+          col = atoi(nm);
           while(col < 4 || col > 50) {
-            printf("Columns number should be 4 to 50!\n");
-            scanf("%d", &col);
+            printf("Columns number should be from 4 to 50!\n");
+            fgets(nm, 10, stdin);
+            col = atoi(nm);
           }
           res = generate_file(optarg, row, col, m_info);
         }
