@@ -1,7 +1,6 @@
 #include "drawing.h"
 #include <unistd.h>
 #include <string.h>
-#include <time.h>
 
 void print_help() {
   printf("Usage:\n"
@@ -65,26 +64,6 @@ int init_maze_from_file(MazeInfo *m_info, char *fileName) {
   return res;
 }
 
-void generate_new_maze(MazeInfo *m_info) {
-  if(m_info && m_info->matrix1 && m_info->matrix2) {
-    srand(time(NULL));
-    for(int i = 0; i < m_info->rows; i++) {
-      for(int j = 0; j < m_info->columns; j++) {
-        int n = rand() % 2;
-        m_info->matrix1[i][j] = n;
-        n = rand() % 2;
-        m_info->matrix2[i][j] = n;
-        if(i + 1 == m_info->rows) {
-          m_info->matrix2[i][j] = 1;
-        }
-        if(j + 1 == m_info->columns) {
-          m_info->matrix1[i][j] = 1;
-        }
-      }
-    }
-  }
-}
-
 int write_maze_file(MazeInfo *m_info, char *fileName) {
   int res = OK;
   FILE *f = fopen(fileName, "w");
@@ -111,7 +90,7 @@ int write_maze_file(MazeInfo *m_info, char *fileName) {
 int generate_file(char *fileName, int rows, int columns, MazeInfo *m_info) {
   int res = init_maze_struct(m_info, rows, columns);
   if(res == OK) {
-    generate_new_maze(m_info);
+    generate_eller(m_info);
     res = write_maze_file(m_info, fileName);
   }
   return res;
