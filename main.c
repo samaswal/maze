@@ -1,6 +1,7 @@
 #include "drawing.h"
 #include <unistd.h>
 #include <string.h>
+#include <locale.h>
 
 void print_help() {
   printf("Usage:\n"
@@ -141,25 +142,73 @@ int get_user_input(int argc, char *argv[], MazeInfo *m_info) {
   return res;
 }
 
+void mv_curs_left(UserInfo *u_info) {
+  if(u_info->x > 1) u_info->x -= 2;
+}
+
+void mv_curs_right(UserInfo *u_info) {
+  if(u_info->x < u_info->maxX) u_info->x += 2;
+}
+
+void mv_curs_down(UserInfo *u_info) {
+  if(u_info->y < u_info->maxY) u_info->y += 2;
+}
+
+void mv_curs_up(UserInfo *u_info) {
+  if(u_info->y > 1) u_info->y -= 2;
+}
+
+int handle_input(int c, UserInfo *u_info) {
+  int res = 1;
+  switch (c) {
+    case 'q':
+      res = 0;
+      break;
+    case KEY_LEFT:
+      mv_curs_left(u_info);
+      break;
+    case KEY_RIGHT:
+      mv_curs_right(u_info);
+      break;
+    case KEY_DOWN:
+      mv_curs_down(u_info);
+      break;
+    case KEY_UP:
+      mv_curs_up(u_info);
+      break;
+    case 10:
+      pick_point(u_info);
+      break;
+    default:
+      break;
+  }
+  return res;
+}
+
 int main(int argc, char *argv[]) {
   MazeInfo *maze_info = get_maze_struct();
+  UserInfo *user_info = get_user_struct();
   int flag = 1;
   int is_ok = OK;
-  //flag = get_user_input(argc, argv, maze_info);
   is_ok = get_user_input(argc, argv, maze_info);
   if(is_ok == INPUT_ERR) destroy_maze_struct(maze_info);
   if(is_ok == OK) flag = 1;
   else flag = 0;
   //print_matrices(maze_info);
   if(is_ok == OK) {
+    init_user_info(user_info, maze_info);
     initscr();
+    cbreak();
     noecho();
+    keypad(stdscr, TRUE);
     curs_set(0);
     
     while(flag) {
       draw_maze(maze_info);
-      if(getch() == 27 /*ESC*/) flag = 0;
-      timeout(500);
+      draw_cursor(user_info->y, user_info->x);
+      draw_picked_points(user_info);
+      flag = handle_input(getch(), user_info);
+      refresh();
     }
   } else print_error(is_ok);
 

@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <ncurses.h>
+#include <time.h>
+
 #define BORDER_TOP 5
 #define BORDER_LEFT 5
 #define MALLOC_ERR -1

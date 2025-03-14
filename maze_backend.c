@@ -1,5 +1,4 @@
 #include "maze_backend.h"
-#include <time.h>
 
 MazeInfo *get_maze_struct() {
   static MazeInfo maze_info;
