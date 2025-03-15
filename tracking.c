@@ -33,13 +33,13 @@ void track(MazeInfo *m_info, UserInfo *u_info) {
                     if(i + 1 < m_info->rows && is_unobstructed(m_info, i, j, i + 1, j)) {
                         if(m_info->track_matrix[i + 1][j] == 0) m_info->track_matrix[i + 1][j] = d + 1;
                     }
-                    else if(i - 1 >= 0 && is_unobstructed(m_info, i, j, i - 1, j)) {
+                    if(i - 1 >= 0 && is_unobstructed(m_info, i, j, i - 1, j)) {
                         if(m_info->track_matrix[i - 1][j] == 0) m_info->track_matrix[i - 1][j] = d + 1;
                     }
-                    else if(j + 1 < m_info->columns && is_unobstructed(m_info, i, j, i, j + 1)) {
+                    if(j + 1 < m_info->columns && is_unobstructed(m_info, i, j, i, j + 1)) {
                         if(m_info->track_matrix[i][j + 1] == 0) m_info->track_matrix[i][j + 1] = d + 1;
                     }
-                    else if(j - 1 >= 0 && is_unobstructed(m_info, i, j, i, j - 1)) {
+                    if(j - 1 >= 0 && is_unobstructed(m_info, i, j, i, j - 1)) {
                         if(m_info->track_matrix[i][j - 1] == 0) m_info->track_matrix[i][j - 1] = d + 1;
                     }
                 }
@@ -47,29 +47,30 @@ void track(MazeInfo *m_info, UserInfo *u_info) {
         }
         d++;
     }
-    for(int i = ye, j = xe; i != yb || j != xb;) {
-        int h = d;
-        if(i + 1 < m_info->rows && m_info->track_matrix[i + 1][j] == d - 1) {
-            m_info->track_matrix[i][j] = -1;
+    int i = ye, j = xe;
+    for(; i != yb || j != xb;) {
+        if(i + 1 < m_info->rows && m_info->track_matrix[i + 1][j] == d - 1 && is_unobstructed(m_info, i, j, i + 1, j)) {
+            m_info->track_matrix[i][j] = -d;
             i++;
             d--;
         }
-        else if(i - 1 >= 0 && m_info->track_matrix[i - 1][j] == d - 1) {
-            m_info->track_matrix[i][j] = -1;
+        else if(i - 1 >= 0 && m_info->track_matrix[i - 1][j] == d - 1 && is_unobstructed(m_info, i, j, i - 1, j)) {
+            m_info->track_matrix[i][j] = -d;
             i--;
             d--;
         }
-        else if(j + 1 < m_info->columns && m_info->track_matrix[i][j + 1] == d - 1) {
-            m_info->track_matrix[i][j] = -1;
+        else if(j + 1 < m_info->columns && m_info->track_matrix[i][j + 1] == d - 1 && is_unobstructed(m_info, i, j, i, j + 1)) {
+            m_info->track_matrix[i][j] = -d;
             j++;
             d--;
         }
-        else if(j - 1 >= 0 && m_info->track_matrix[i][j - 1] == d - 1) {
-            m_info->track_matrix[i][j] = -1;
+        else if(j - 1 >= 0 && m_info->track_matrix[i][j - 1] == d - 1 && is_unobstructed(m_info, i, j, i, j - 1)) {
+            m_info->track_matrix[i][j] = -d;
             j--;
             d--;
         }
     }
+    m_info->track_matrix[i][j] = -1;
 }
 
 void clear_matr(int **matr, int rows, int cols) {

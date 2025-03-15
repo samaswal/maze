@@ -134,7 +134,7 @@ void draw_picked_points(UserInfo *u_info) {
     int y1 = u_info->fPickedY;
     int x2 = u_info->sPickedX;
     int y2 = u_info->sPickedY;
-    chtype start_pointer = ACS_BULLET | A_BLINK;
+    chtype start_pointer = 'o' | A_BLINK;
     chtype end_pointer = 'X' | A_BLINK;
     if(has_colors()) {
       start_color();
@@ -153,15 +153,28 @@ void draw_track(MazeInfo *m_info) {
   int r = m_info->rows;
   int c = m_info->columns;
   chtype ch = ACS_BULLET | A_BLINK;
+  chtype vert = ACS_VLINE | A_BLINK;
+  chtype hor = ACS_HLINE | A_BLINK;
   if(has_colors()) {
     start_color();
     init_pair(1, COLOR_RED, COLOR_BLACK);
     ch = ch | COLOR_PAIR(1);
+    vert = vert | COLOR_PAIR(1);
+    hor = hor | COLOR_PAIR(1);
   }
   for(int i = 0; i < r; i++) {
     for(int j = 0; j < c; j++) {
-      if(m_info->track_matrix[i][j] == -1) {
+      if(m_info->track_matrix[i][j] <= -1) {
         mvaddch(BORDER_TOP + 1 + (i * 2), BORDER_LEFT + 1 + ((j * 2)), ch);
+        if(i + 1 < r && (m_info->track_matrix[i + 1][j] == m_info->track_matrix[i][j] - 1))
+          mvaddch(BORDER_TOP + 1 + (i * 2) + 1, BORDER_LEFT + 1 + ((j * 2)), vert);
+        if(i - 1 >= 0 && (m_info->track_matrix[i - 1][j] == m_info->track_matrix[i][j] - 1))
+          mvaddch(BORDER_TOP + 1 + (i * 2) - 1, BORDER_LEFT + 1 + ((j * 2)), vert);
+        if(j + 1 < c && (m_info->track_matrix[i][j + 1] == m_info->track_matrix[i][j] - 1))
+          mvaddch(BORDER_TOP + 1 + (i * 2), BORDER_LEFT + 1 + ((j * 2) + 1), hor);
+        if(j - 1 >= 0 && (m_info->track_matrix[i][j - 1] == m_info->track_matrix[i][j] - 1))
+          mvaddch(BORDER_TOP + 1 + (i * 2), BORDER_LEFT + 1 + ((j * 2) - 1), hor);
+
       }
     }
   }

@@ -211,8 +211,8 @@ int main(int argc, char *argv[]) {
     while(flag) {
       draw_maze(maze_info);
       draw_cursor(user_info->y, user_info->x);
-      draw_picked_points(user_info);
       draw_track(maze_info);
+      draw_picked_points(user_info);
       flag = handle_input(getch(), user_info, maze_info);
       refresh();
     }
