@@ -1,4 +1,7 @@
 #include "drawing.h"
+#include "structs.h"
+#include <ncurses.h>
+
 
 void draw_cursor(int y, int x) {
   //clear();
@@ -22,17 +25,23 @@ void init_user_info(UserInfo *u_info, MazeInfo *m_info) {
   u_info->sPickedX = 0;
 }
 
-void pick_point(UserInfo *u_info) {
+int pick_point(UserInfo *u_info) {
+  int res = 0; //is point picked for tracking
   if(u_info) {
     int x = u_info->x;
     int y = u_info->y;
     if(u_info->fPickedX == 0) {
       u_info->fPickedX = x;
       u_info->fPickedY = y;
+      //move(2, 2);
+      //printw("%d", res);
     }
     else if(u_info->sPickedX == 0) {
       u_info->sPickedX = x;
       u_info->sPickedY = y;
+      res = 1;
+      move(2, 2);
+      printw("%d", res);
     }
     else {
       u_info->fPickedX = 0;
@@ -41,6 +50,7 @@ void pick_point(UserInfo *u_info) {
       u_info->sPickedY = 0;
     }
   }
+  return res;
 }
 
 void draw_single_cell(MazeInfo *maze_info, int y, int x) {
@@ -136,5 +146,23 @@ void draw_picked_points(UserInfo *u_info) {
       mvaddch(BORDER_TOP + y1, BORDER_LEFT + x1, start_pointer);
     if(y2 > 0 && x2 > 0)
       mvaddch(BORDER_TOP + y2, BORDER_LEFT + x2, end_pointer);
+  }
+}
+
+void draw_track(MazeInfo *m_info) {
+  int r = m_info->rows;
+  int c = m_info->columns;
+  chtype ch = ACS_BULLET | A_BLINK;
+  if(has_colors()) {
+    start_color();
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+    ch = ch | COLOR_PAIR(1);
+  }
+  for(int i = 0; i < r; i++) {
+    for(int j = 0; j < c; j++) {
+      if(m_info->track_matrix[i][j] == -1) {
+        mvaddch(BORDER_TOP + 1 + (i * 2), BORDER_LEFT + 1 + ((j * 2)), ch);
+      }
+    }
   }
 }

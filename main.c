@@ -1,4 +1,8 @@
 #include "drawing.h"
+#include "maze_backend.h"
+#include "structs.h"
+#include "tracking.h"
+
 #include <unistd.h>
 #include <string.h>
 #include <locale.h>
@@ -158,7 +162,7 @@ void mv_curs_up(UserInfo *u_info) {
   if(u_info->y > 1) u_info->y -= 2;
 }
 
-int handle_input(int c, UserInfo *u_info) {
+int handle_input(int c, UserInfo *u_info, MazeInfo *m_info) {
   int res = 1;
   switch (c) {
     case 'q':
@@ -177,7 +181,8 @@ int handle_input(int c, UserInfo *u_info) {
       mv_curs_up(u_info);
       break;
     case 10:
-      pick_point(u_info);
+      if(pick_point(u_info)) track(m_info, u_info);
+      else clear_matr(m_info->track_matrix, m_info->rows, m_info->columns);
       break;
     default:
       break;
@@ -207,7 +212,8 @@ int main(int argc, char *argv[]) {
       draw_maze(maze_info);
       draw_cursor(user_info->y, user_info->x);
       draw_picked_points(user_info);
-      flag = handle_input(getch(), user_info);
+      draw_track(maze_info);
+      flag = handle_input(getch(), user_info, maze_info);
       refresh();
     }
   } else print_error(is_ok);
