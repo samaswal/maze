@@ -108,9 +108,21 @@ void draw_single_cell(MazeInfo *maze_info, int y, int x) {
     mvaddch(BORDER_TOP + 1 + (y * 2) + 1, BORDER_LEFT + 1 + (x * 2) + 1, ACS_HLINE);
 }
 
+void draw_controls_maze_hint() {
+  mvprintw(0, 0, "Pick point");
+  mvprintw(1, 0, "Menu");
+  mvprintw(2, 0, "Exit");
+  attron(A_REVERSE);
+  mvprintw(0, 11, "ENTER");
+  mvprintw(1, 6, "B");
+  mvprintw(2, 6, "Q");
+  attroff(A_REVERSE);
+}
+
 void draw_maze(MazeInfo *maze_info) {
     if(is_correct_maze(maze_info)) {
         clear();
+        draw_controls_maze_hint();
         int r = maze_info->rows;
         int c = maze_info->columns;
         mvhline(BORDER_TOP, BORDER_LEFT, 0, c * 2);
@@ -211,8 +223,8 @@ void display_files_modes_menu(int selected) {
   int start_x = (max_x - width) / 2;
   WINDOW *menu_win = newwin(height, width, start_y, start_x);
   box(menu_win, 0, 0);
-  mvwprintw(menu_win, 1, 1, "Maze source:");
-  const char *modes[] = {"Generate maze", "Choose file", "Back", "Exit"};
+  mvwprintw(menu_win, 1, 1, "Source:");
+  const char *modes[] = {"Generate file", "Choose file", "Back", "Exit"};
   for (int i = 0; i < 4; i++) {
     if (i == selected) {
       wattron(menu_win, A_REVERSE); // Invert colors for the selected item
@@ -244,4 +256,54 @@ void display_filename_input_menu(const char *prompt, char *filename) {
   mvwgetnstr(input_win, 3, 1, filename, 20);  // Read a string from the user
   noecho();
   delwin(input_win);
+}
+
+
+
+void display_size_input_menu(const char *prompt, int row, int *val) {
+  char num[4];
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);
+
+  int width = 30, height = 5;
+  int start_y = (max_y - height) / 2;
+  int start_x = (max_x - width) / 2;
+
+  WINDOW *input_win = newwin(height, width, start_y, start_x);
+  box(input_win, 0, 0);
+  if(*prompt != '\0')
+    mvwprintw(input_win, 1, 1, prompt);
+  wrefresh(input_win);
+  echo();
+  mvwgetnstr(input_win, row, 1, num, 20);
+  noecho();
+  *val = atoi(num);
+  while(*val < 4 || *val > 50) {
+    mvwprintw(stdscr, 1, 1, "Incorrect size! Size should be from 4 to 50!");
+    refresh();
+    echo();
+    mvwgetnstr(input_win, row, 1, num, 20);
+    noecho();
+    *val = atoi(num);
+  }
+  delwin(input_win);
+}
+
+void draw_cave(CaveInfo *cave_info) {
+  if(is_correct_cave(cave_info)) {
+    clear();
+    draw_controls_maze_hint();
+    int r = cave_info->rows;
+    int c = cave_info->columns;
+/*
+    mvaddch(BORDER_TOP, BORDER_LEFT, ACS_ULCORNER);
+    mvaddch(BORDER_TOP, BORDER_LEFT + c * 2, ACS_URCORNER);
+    mvaddch(BORDER_TOP + r * 2, BORDER_LEFT, ACS_LLCORNER);*/
+    for(int i = 0; i < r; i++) {
+      for(int j = 0; j < c; j++) {
+        if(cave_info->matrix[i][j])
+          mvaddch(BORDER_TOP + i, BORDER_LEFT + j, ACS_BOARD);
+      }
+    }
+  }
 }

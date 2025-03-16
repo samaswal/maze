@@ -1,3 +1,4 @@
+#include "cave/cave_backend.h"
 #include "drawing.h"
 #include "maze_backend.h"
 #include "structs.h"
@@ -67,6 +68,7 @@ int init_maze_from_file(MazeInfo *m_info, char *fileName) {
       if(res == INPUT_ERR) break;
     }
   }
+  if(f) fclose(f);
   return res;
 }
 
@@ -90,10 +92,11 @@ int write_maze_file(MazeInfo *m_info, char *fileName) {
       fprintf(f, "\n");
     }
   }
+  if(f) fclose(f);
   return res;
 }
 
-int generate_file(char *fileName, int rows, int columns, MazeInfo *m_info) {
+int generate_maze_file(char *fileName, int rows, int columns, MazeInfo *m_info) {
   int res = init_maze_struct(m_info, rows, columns);
   if(res == OK) {
     generate_eller(m_info);
@@ -135,7 +138,7 @@ int get_user_input(int argc, char *argv[], MazeInfo *m_info) {
             fgets(nm, 10, stdin);
             col = atoi(nm);
           }
-          res = generate_file(optarg, row, col, m_info);
+          res = generate_maze_file(optarg, row, col, m_info);
         }
         break;
       default:
@@ -163,13 +166,19 @@ void mv_curs_up(UserInfo *u_info) {
   if(u_info->y > 1) u_info->y -= 2;
 }
 
-int handle_input(int c, UserInfo *u_info, MazeInfo *m_info) {
+int handle_maze_input(int c, UserInfo *u_info, MazeInfo *m_info) {
   int res = OK;
   switch (c) {
     case 'q':
       res = EXIT;
       break;
+    case 'Q':
+      res = EXIT;
+      break;
     case 'b':
+      res = BACK;
+      break;
+    case 'B':
       res = BACK;
       break;
     case KEY_LEFT:
@@ -189,6 +198,25 @@ int handle_input(int c, UserInfo *u_info, MazeInfo *m_info) {
       else clear_matr(m_info->track_matrix, m_info->rows, m_info->columns);
       break;
     default:
+      break;
+  }
+  return res;
+}
+
+int handle_cave_input(int c/*, CaveInfo *c_info*/) {
+  int res = OK;
+  switch (c) {
+    case 'q':
+      res = EXIT;
+      break;
+    case 'b':
+      res = BACK;
+      break;
+    case 'Q':
+      res = EXIT;
+      break;
+    case 'B':
+      res = BACK;
       break;
   }
   return res;
@@ -214,7 +242,7 @@ int mode_chosing(int *mode) {
   return res;
 }
 
-int maze_file_mode_chosing(int *mode) {
+int file_mode_chosing(int *mode) {
   int res = OK, key = 0;
   display_files_modes_menu(0);
   refresh();
@@ -239,75 +267,117 @@ int maze_file_mode_chosing(int *mode) {
 int maze_output_from_file() {
   int res = OK;
   char filename[40];
-  MazeInfo *maze_info = get_maze_struct();
-  UserInfo *user_info = get_user_struct();
+  MazeInfo maze_info;
+  UserInfo user_info;
   while (res == OK) {
     display_filename_input_menu("Filename:", filename);
-    res = init_maze_from_file(maze_info, filename);
-    if(res == OK) init_user_info(user_info, maze_info);
+    res = init_maze_from_file(&maze_info, filename);
+    if(res == OK) init_user_info(&user_info, &maze_info);
     clear();
     while (res == OK) {
-      draw_maze(maze_info);
-      draw_cursor(user_info->y, user_info->x);
-      draw_track(maze_info);
-      draw_picked_points(user_info);
-      res = handle_input(getch(), user_info, maze_info);
+      draw_maze(&maze_info);
+      draw_cursor(user_info.y, user_info.x);
+      draw_track(&maze_info);
+      draw_picked_points(&user_info);
+      res = handle_maze_input(getch(), &user_info, &maze_info);
       refresh();
     }
     clear();
-    destroy_maze_struct(maze_info);
+    if(res != INPUT_ERR && res != MALLOC_ERR) destroy_maze_struct(&maze_info);
   }
   return res;
 }
 
+int maze_generation_mode_picked() {
+  int res = OK;
+  MazeInfo maze_info;
+  UserInfo user_info;
+  while(res == OK) {
+    int row = 0, col = 0;
+    char filename[40];
+    display_size_input_menu("Rows:", 2, &row);
+    display_size_input_menu("Columns:", 3, &col);
+    display_filename_input_menu("Filename:", filename);
+    res = generate_maze_file(filename, row, col, &maze_info);
+    if(res == OK) init_user_info(&user_info, &maze_info);
+    clear();
+    while (res == OK) {
+      draw_maze(&maze_info);
+      draw_cursor(user_info.y, user_info.x);
+      draw_track(&maze_info);
+      draw_picked_points(&user_info);
+      res = handle_maze_input(getch(), &user_info, &maze_info);
+      refresh();
+    }
+    clear();
+    if(res != INPUT_ERR && res != MALLOC_ERR) destroy_maze_struct(&maze_info);
+  }
+  return res;
+}
 
 int process_maze_mode() {
   clear();
   int res = OK, maze_mode = 0;
   while(res != EXIT && res != BACK) {
-    res = maze_file_mode_chosing(&maze_mode);
+    res = file_mode_chosing(&maze_mode);
     if(res == OK && maze_mode == 1) {
       res = maze_output_from_file();
+      if(res == INPUT_ERR)
+        mvwprintw(stdscr, 0, 0, "No such file");
+      else if(res == MALLOC_ERR)
+        mvwprintw(stdscr, 0, 0, "Memory allocation failed");
+    }
+    else if(res == OK && maze_mode == 0) {
+      res = maze_generation_mode_picked();
+      if(res == INPUT_ERR)
+        mvwprintw(stdscr, 0, 0, "No such file");
+      else if(res == MALLOC_ERR)
+        mvwprintw(stdscr, 0, 0, "Memory allocation failed");
     }
   }
   return res;
 }
 
-int main(/*int argc, char *argv[]*/) {
-  // MazeInfo *maze_info = get_maze_struct();
-  // UserInfo *user_info = get_user_struct();
-  // int flag = 1;
-  // int is_ok = OK;
-  // is_ok = get_user_input(argc, argv, maze_info);
-  // if(is_ok == INPUT_ERR) destroy_maze_struct(maze_info);
-  // if(is_ok == OK) flag = 1;
-  // else flag = 0;
-  // //print_matrices(maze_info);
-  // if(is_ok == OK) {
-  //   init_user_info(user_info, maze_info);
-  //   initscr();
-  //   cbreak();
-  //   noecho();
-  //   keypad(stdscr, TRUE);
-  //   curs_set(0);
-    // if(has_colors()) {
-    //   start_color();
-    //   init_pair(1, COLOR_RED, COLOR_BLACK);
-    // }
-  //
-  //   while(flag) {
-  //     draw_maze(maze_info);
-  //     draw_cursor(user_info->y, user_info->x);
-  //     draw_track(maze_info);
-  //     draw_picked_points(user_info);
-  //     flag = handle_input(getch(), user_info, maze_info);
-  //     refresh();
-  //   }
-  // } else print_error(is_ok);
-  //
-  // destroy_maze_struct(maze_info);
-  // endwin();
+int cave_generation_mode_picked() {
+  int res = OK;
+  CaveInfo cave_info;
+  //UserInfo user_info;
+  while(res == OK) {
+    int row = 0, col = 0;
+    char filename[40];
+    display_size_input_menu("Rows:", 2, &row);
+    display_size_input_menu("Columns:", 3, &col);
+    display_filename_input_menu("Filename:", filename);
+    res = generate_cave_file(filename, row, col, &cave_info);
+    clear();
+    while(res == OK) {
+      draw_cave(&cave_info);
+      res = handle_cave_input(getch());
+      refresh();
+    }
+    clear();
+    if(res != INPUT_ERR && res != MALLOC_ERR) destroy_cave_struct(&cave_info);
+  }
+  return res;
+}
 
+int process_cave_mode() {
+  clear();
+  int res = OK, opening_mode = 0; // generate or open existing cave file
+  while(res != EXIT && res != BACK) {
+    res = file_mode_chosing(&opening_mode);
+    if(res == OK && opening_mode == 0) {
+      res = cave_generation_mode_picked();
+      if(res == INPUT_ERR)
+        mvwprintw(stdscr, 0, 0, "No such file");
+      else if(res == MALLOC_ERR)
+        mvwprintw(stdscr, 0, 0, "Memory allocation failed");
+    }
+  }
+  return res;
+}
+
+int main() {
   initscr();
   cbreak();
   noecho();
@@ -324,6 +394,8 @@ int main(/*int argc, char *argv[]*/) {
     if(res == OK && mode == 0) {
       res = process_maze_mode();
     }
+    else if(res == OK && mode == 1)
+      res = process_cave_mode();
   }
   endwin();
 }

@@ -3,7 +3,10 @@
 
 #include <ncurses.h>
 #include <ctype.h>
+#include <string.h>
+#include <stdlib.h>
 #include "structs.h"
+#include "cave/cave_backend.h"
 
 void draw_single_cell(MazeInfo *maze_info, int y, int x);
 void draw_maze(MazeInfo *maze_info);
@@ -16,5 +19,8 @@ void draw_track(MazeInfo *m_info);
 void display_modes_menu(int selected);
 void display_files_modes_menu(int selected);
 void display_filename_input_menu(const char *prompt, char *filename);
+void display_size_input_menu(const char *prompt, int row, int *val);
+void draw_controls_maze_hint();
+void draw_cave(CaveInfo *cave_info);
 
 #endif

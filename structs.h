@@ -9,6 +9,8 @@
 #define EXIT 4
 #define BACK 5
 
+#include <ncurses.h>
+
 typedef struct MazeInfo {
     int rows;
     int columns;
@@ -17,7 +19,13 @@ typedef struct MazeInfo {
     int **track_matrix;
 } MazeInfo;
 
-typedef struct UserInfo {
+typedef struct CaveInfo {
+    int rows;
+    int columns;
+    int **matrix;
+} CaveInfo;
+
+typedef struct MazeUserInfo {
     int y;
     int x;
     int maxY;
@@ -27,6 +35,8 @@ typedef struct UserInfo {
     int sPickedX;
     int sPickedY;
 } UserInfo;
+
+//typedef struct CaveUserInfo {}
 
 int is_correct_maze(MazeInfo *m_info);
 

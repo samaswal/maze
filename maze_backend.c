@@ -1,10 +1,5 @@
 #include "maze_backend.h"
 
-MazeInfo *get_maze_struct() {
-  static MazeInfo maze_info;
-  return &maze_info;
-}
-
 int init_maze_struct(MazeInfo *maze_info, int r, int c) {
   int res = OK;
   res = (r > 0 && r <= 50 && c > 0 && c <= 50) ? OK : INPUT_ERR;
@@ -59,24 +54,6 @@ int is_correct_maze(MazeInfo *m_info) {
   int res = 1;
   if(!(m_info && m_info->matrix1 && m_info->matrix2 && m_info->track_matrix && m_info->columns > 0 && m_info->rows > 0)) res = 0;
   return res;
-}
-
-void print_matrices(MazeInfo *m_info) {
-  if(is_correct_maze(m_info)) {
-    for(int i = 0; i < m_info->rows; i++) {
-      for(int j = 0; j < m_info->columns; j++) {
-        printf("%d ", m_info->matrix1[i][j]);
-      }
-      printf("\n");
-    }
-    printf("\n");
-    for(int i = 0; i < m_info->rows; i++) {
-      for(int j = 0; j < m_info->columns; j++) {
-        printf("%d ", m_info->matrix2[i][j]);
-      }
-      printf("\n");
-    }
-  }
 }
 
 void generate_new_maze(MazeInfo *m_info) {
