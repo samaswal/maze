@@ -3,6 +3,7 @@
 #include "structs.h"
 #include "tracking.h"
 
+#include <ncurses.h>
 #include <unistd.h>
 #include <string.h>
 #include <locale.h>
@@ -111,7 +112,7 @@ int get_user_input(int argc, char *argv[], MazeInfo *m_info) {
           res = init_maze_from_file(m_info, optarg);
         break;
       case 'h':
-        res = HELP_MODE;
+        res = HELP;
         print_help();
         break;
       case 'g':
@@ -163,10 +164,13 @@ void mv_curs_up(UserInfo *u_info) {
 }
 
 int handle_input(int c, UserInfo *u_info, MazeInfo *m_info) {
-  int res = 1;
+  int res = OK;
   switch (c) {
     case 'q':
-      res = 0;
+      res = EXIT;
+      break;
+    case 'b':
+      res = BACK;
       break;
     case KEY_LEFT:
       mv_curs_left(u_info);
@@ -190,34 +194,136 @@ int handle_input(int c, UserInfo *u_info, MazeInfo *m_info) {
   return res;
 }
 
-int main(int argc, char *argv[]) {
+int mode_chosing(int *mode) {
+  int res = OK, key = 0;
+  display_modes_menu(0);
+  refresh();
+  while(res == OK) {
+    display_modes_menu(*mode);
+
+    key = getch();
+    if (key == KEY_UP && *mode > 0) {
+      (*mode)--;
+    } else if (key == KEY_DOWN && *mode < 3) {
+      (*mode)++;
+    } else if (key == 10) {
+      if(*mode == 3) res = EXIT;
+      break;
+    }
+  }
+  return res;
+}
+
+int maze_file_mode_chosing(int *mode) {
+  int res = OK, key = 0;
+  display_files_modes_menu(0);
+  refresh();
+  while(res == OK) {
+    display_files_modes_menu(*mode);
+    key = getch();
+    if (key == KEY_UP && *mode > 0) {
+      (*mode)--;
+    } else if (key == KEY_DOWN && *mode < 4) {
+      (*mode)++;
+    } else if (key == 10) {
+      if(*mode == 3) res = EXIT;
+      else if(*mode == 2) res = BACK;
+      break;
+    }
+  }
+  return res;
+}
+
+
+
+int maze_output_from_file() {
+  int res = OK;
+  char filename[40];
   MazeInfo *maze_info = get_maze_struct();
   UserInfo *user_info = get_user_struct();
-  int flag = 1;
-  int is_ok = OK;
-  is_ok = get_user_input(argc, argv, maze_info);
-  if(is_ok == INPUT_ERR) destroy_maze_struct(maze_info);
-  if(is_ok == OK) flag = 1;
-  else flag = 0;
-  //print_matrices(maze_info);
-  if(is_ok == OK) {
-    init_user_info(user_info, maze_info);
-    initscr();
-    cbreak();
-    noecho();
-    keypad(stdscr, TRUE);
-    curs_set(0);
-    
-    while(flag) {
+  while (res == OK) {
+    display_filename_input_menu("Filename:", filename);
+    res = init_maze_from_file(maze_info, filename);
+    if(res == OK) init_user_info(user_info, maze_info);
+    clear();
+    while (res == OK) {
       draw_maze(maze_info);
       draw_cursor(user_info->y, user_info->x);
       draw_track(maze_info);
       draw_picked_points(user_info);
-      flag = handle_input(getch(), user_info, maze_info);
+      res = handle_input(getch(), user_info, maze_info);
       refresh();
     }
-  } else print_error(is_ok);
+    clear();
+    destroy_maze_struct(maze_info);
+  }
+  return res;
+}
 
-  destroy_maze_struct(maze_info);	
+
+int process_maze_mode() {
+  clear();
+  int res = OK, maze_mode = 0;
+  while(res != EXIT && res != BACK) {
+    res = maze_file_mode_chosing(&maze_mode);
+    if(res == OK && maze_mode == 1) {
+      res = maze_output_from_file();
+    }
+  }
+  return res;
+}
+
+int main(/*int argc, char *argv[]*/) {
+  // MazeInfo *maze_info = get_maze_struct();
+  // UserInfo *user_info = get_user_struct();
+  // int flag = 1;
+  // int is_ok = OK;
+  // is_ok = get_user_input(argc, argv, maze_info);
+  // if(is_ok == INPUT_ERR) destroy_maze_struct(maze_info);
+  // if(is_ok == OK) flag = 1;
+  // else flag = 0;
+  // //print_matrices(maze_info);
+  // if(is_ok == OK) {
+  //   init_user_info(user_info, maze_info);
+  //   initscr();
+  //   cbreak();
+  //   noecho();
+  //   keypad(stdscr, TRUE);
+  //   curs_set(0);
+    // if(has_colors()) {
+    //   start_color();
+    //   init_pair(1, COLOR_RED, COLOR_BLACK);
+    // }
+  //
+  //   while(flag) {
+  //     draw_maze(maze_info);
+  //     draw_cursor(user_info->y, user_info->x);
+  //     draw_track(maze_info);
+  //     draw_picked_points(user_info);
+  //     flag = handle_input(getch(), user_info, maze_info);
+  //     refresh();
+  //   }
+  // } else print_error(is_ok);
+  //
+  // destroy_maze_struct(maze_info);
+  // endwin();
+
+  initscr();
+  cbreak();
+  noecho();
+  keypad(stdscr, TRUE);
+  curs_set(0);
+  if(has_colors()) {
+    start_color();
+    init_pair(1, COLOR_RED, COLOR_BLACK);
+  }
+  int mode = 0, res = OK;
+  while(res != EXIT) {
+    res = OK;
+    res = mode_chosing(&mode);
+    if(res == OK && mode == 0) {
+      res = process_maze_mode();
+    }
+  }
   endwin();
 }

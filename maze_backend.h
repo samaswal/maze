@@ -6,12 +6,6 @@
 #include <time.h>
 #include "structs.h"
 
-#define BORDER_TOP 5
-#define BORDER_LEFT 5
-#define MALLOC_ERR -1
-#define INPUT_ERR 1
-#define HELP_MODE 2
-
 MazeInfo *get_maze_struct();
 
 int init_maze_struct(MazeInfo *maze_info, int r, int c);

@@ -3,9 +3,11 @@
 
 #define BORDER_TOP 5
 #define BORDER_LEFT 5
-#define MALLOC_ERR -1
-#define INPUT_ERR 1
-#define HELP_MODE 2
+#define MALLOC_ERR 1
+#define INPUT_ERR 2
+#define HELP 3
+#define EXIT 4
+#define BACK 5
 
 typedef struct MazeInfo {
     int rows;

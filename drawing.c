@@ -2,7 +2,6 @@
 #include "structs.h"
 #include <ncurses.h>
 
-
 void draw_cursor(int y, int x) {
   //clear();
   chtype cur = ACS_DIAMOND | A_BLINK;
@@ -137,8 +136,6 @@ void draw_picked_points(UserInfo *u_info) {
     chtype start_pointer = 'o' | A_BLINK;
     chtype end_pointer = 'X' | A_BLINK;
     if(has_colors()) {
-      start_color();
-      init_pair(1, COLOR_RED, COLOR_BLACK);
       start_pointer = start_pointer | COLOR_PAIR(1);
       end_pointer = end_pointer | COLOR_PAIR(1);
     }
@@ -156,8 +153,6 @@ void draw_track(MazeInfo *m_info) {
   chtype vert = ACS_VLINE | A_BLINK;
   chtype hor = ACS_HLINE | A_BLINK;
   if(has_colors()) {
-    start_color();
-    init_pair(1, COLOR_RED, COLOR_BLACK);
     ch = ch | COLOR_PAIR(1);
     vert = vert | COLOR_PAIR(1);
     hor = hor | COLOR_PAIR(1);
@@ -178,4 +173,75 @@ void draw_track(MazeInfo *m_info) {
       }
     }
   }
+}
+
+void display_modes_menu(int selected) {
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);  // Get screen dimensions
+
+  int width = 30, height = 8;  // Set the dialog box size
+  int start_y = (max_y - height) / 2;  // Center the window vertically
+  int start_x = (max_x - width) / 2;   // Center the window horizontally
+
+  WINDOW *menu_win = newwin(height, width, start_y, start_x);
+  box(menu_win, 0, 0);  // Draw a border around the window
+
+  mvwprintw(menu_win, 1, 1, "Choose mode:");
+
+  const char *colors[] = {"Maze", "Cave", "MazeML", "Exit"};
+  for (int i = 0; i < 4; i++) {
+    if (i == selected) {
+      wattron(menu_win, A_REVERSE); // Invert colors for the selected item
+    }
+    mvwprintw(menu_win, i + 2, 1, "%s", colors[i]);
+    if (i == selected) {
+      wattroff(menu_win, A_REVERSE); // Turn off color inversion
+    }
+  }
+
+  wrefresh(menu_win);  // Refresh the window to show content
+  delwin(menu_win);
+}
+
+void display_files_modes_menu(int selected) {
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);
+  int width = 30, height = 8;
+  int start_y = (max_y - height) / 2;
+  int start_x = (max_x - width) / 2;
+  WINDOW *menu_win = newwin(height, width, start_y, start_x);
+  box(menu_win, 0, 0);
+  mvwprintw(menu_win, 1, 1, "Maze source:");
+  const char *modes[] = {"Generate maze", "Choose file", "Back", "Exit"};
+  for (int i = 0; i < 4; i++) {
+    if (i == selected) {
+      wattron(menu_win, A_REVERSE); // Invert colors for the selected item
+    }
+    mvwprintw(menu_win, i + 2, 1, "%s", modes[i]);
+    if (i == selected) {
+      wattroff(menu_win, A_REVERSE); // Turn off color inversion
+    }
+  }
+  wrefresh(menu_win);  // Refresh the window to show content
+  delwin(menu_win);
+}
+
+void display_filename_input_menu(const char *prompt, char *filename) {
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);  // Get screen dimensions
+
+  int width = 30, height = 5;  // Set the dialog box size for input
+  int start_y = (max_y - height) / 2;  // Center the window vertically
+  int start_x = (max_x - width) / 2;   // Center the window horizontally
+
+  WINDOW *input_win = newwin(height, width, start_y, start_x);
+  box(input_win, 0, 0);  // Draw a border around the window
+
+  mvwprintw(input_win, 1, 1, prompt);
+  wrefresh(input_win);
+
+  echo();
+  mvwgetnstr(input_win, 3, 1, filename, 20);  // Read a string from the user
+  noecho();
+  delwin(input_win);
 }
