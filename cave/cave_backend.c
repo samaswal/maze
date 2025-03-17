@@ -37,18 +37,18 @@ void destroy_cave_struct(CaveInfo *c_info) {
   c_info = NULL;
 }
 
-int is_correct_cave(CaveInfo *c_info) {
+int is_correct_cave(const CaveInfo *c_info) {
     int res = 1;
     if(!(c_info && c_info->matrix && c_info->columns > 0 && c_info->rows > 0)) res = 0;
     return res;
 }
 
-void generate_new_cave_primal(CaveInfo *c_info) {
+void set_cave_primal(CaveInfo *c_info) {
   if(is_correct_cave(c_info)) {
     srand(time(NULL));
     for(int i = 0; i < c_info->rows; i++) {
       for(int j = 0; j < c_info->columns; j++) {
-        c_info->matrix[i][j] = rand() % 2;
+        c_info->matrix[i][j] = (rand() % 100 <= 40);
       }
     }
   }
@@ -57,14 +57,14 @@ void generate_new_cave_primal(CaveInfo *c_info) {
 int generate_cave_file(char *filename, int rows, int columns, CaveInfo *c_info) {
     int res = init_cave_struct(c_info, rows, columns);
     if(res == OK) {
-        generate_new_cave_primal(c_info);
+        set_cave_primal(c_info);
         res = write_cave_file(c_info, filename);
 
     }
     return res;
 }
 
-int write_cave_file(CaveInfo *c_info, char *fileName) {
+int write_cave_file(const CaveInfo *c_info, char *fileName) {
     int res = OK;
     FILE *f = fopen(fileName, "w");
     if(!f) res = INPUT_ERR;

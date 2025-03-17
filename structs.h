@@ -10,6 +10,7 @@
 #define BACK 5
 
 #include <ncurses.h>
+#include <time.h>
 
 typedef enum CaveGenMode {
     AUTOMATIC,
@@ -30,7 +31,8 @@ typedef struct CaveInfo {
     int birth_limit;
     int death_limit;
     CaveGenMode gen_mode;
-    int time_delay;
+    clock_t time_delay;
+    clock_t time;
     int **matrix;
 
 } CaveInfo;
@@ -48,7 +50,8 @@ typedef struct MazeUserInfo {
 
 //typedef struct CaveUserInfo {}
 
-int is_correct_maze(MazeInfo *m_info);
+int is_correct_maze(const MazeInfo *m_info);
+int is_correct_cave(const CaveInfo *c_info);
 
 void clear_matr(int **matr, int rows, int cols);
 

@@ -32,8 +32,6 @@ int pick_point(UserInfo *u_info) {
     if(u_info->fPickedX == 0) {
       u_info->fPickedX = x;
       u_info->fPickedY = y;
-      //move(2, 2);
-      //printw("%d", res);
     }
     else if(u_info->sPickedX == 0) {
       u_info->sPickedX = x;
@@ -52,7 +50,7 @@ int pick_point(UserInfo *u_info) {
   return res;
 }
 
-void draw_single_cell(MazeInfo *maze_info, int y, int x) {
+void draw_single_cell(const MazeInfo *maze_info, int y, int x) {
   if(maze_info->matrix1[y][x]) {
     if(y == 0 && x + 1 < maze_info->columns) mvaddch(BORDER_TOP + (y * 2), BORDER_LEFT + 1 + ((x * 2) + 1), ACS_TTEE);
     mvaddch(BORDER_TOP + 1 + (y * 2), BORDER_LEFT + 1 + ((x * 2) + 1), ACS_VLINE);
@@ -119,7 +117,27 @@ void draw_controls_maze_hint() {
   attroff(A_REVERSE);
 }
 
-void draw_maze(MazeInfo *maze_info) {
+void draw_controls_cave_step_hint() {
+  mvprintw(0, 0, "Next step");
+  mvprintw(1, 0, "Menu");
+  mvprintw(2, 0, "Exit");
+  attron(A_REVERSE);
+  mvprintw(0, 11, "ENTER");
+  mvprintw(1, 6, "B");
+  mvprintw(2, 6, "Q");
+  attroff(A_REVERSE);
+}
+
+void draw_controls_cave_automatic_hint() {
+  mvprintw(0, 0, "Menu");
+  mvprintw(1, 0, "Exit");
+  attron(A_REVERSE);
+  mvprintw(0, 6, "B");
+  mvprintw(1, 6, "Q");
+  attroff(A_REVERSE);
+}
+
+void draw_maze(const MazeInfo *maze_info) {
     if(is_correct_maze(maze_info)) {
         clear();
         draw_controls_maze_hint();
@@ -139,7 +157,7 @@ void draw_maze(MazeInfo *maze_info) {
     }
 }
 
-void draw_picked_points(UserInfo *u_info) {
+void draw_picked_points(const UserInfo *u_info) {
   if(u_info) {
     int x1 = u_info->fPickedX;
     int y1 = u_info->fPickedY;
@@ -158,7 +176,7 @@ void draw_picked_points(UserInfo *u_info) {
   }
 }
 
-void draw_track(MazeInfo *m_info) {
+void draw_track(const MazeInfo *m_info) {
   int r = m_info->rows;
   int c = m_info->columns;
   chtype ch = ACS_BULLET | A_BLINK;
@@ -305,7 +323,7 @@ void display_size_input_menu(const char *prompt, int row, int *val, int min, int
     mvwprintw(input_win, 1, 1, prompt);
   wrefresh(input_win);
   echo();
-  mvwgetnstr(input_win, row, 1, num, 4);
+  mvwgetnstr(input_win, row, 1, num, 10);
   noecho();
   *val = atoi(num);
   while(*val < min || *val > max) {
@@ -325,20 +343,19 @@ void display_size_input_menu(const char *prompt, int row, int *val, int min, int
   delwin(input_win);
 }
 
-void draw_cave(CaveInfo *cave_info) {
+void draw_cave(const CaveInfo *cave_info) {
   if(is_correct_cave(cave_info)) {
     clear();
-    draw_controls_maze_hint();
+    if(cave_info->gen_mode == STEP_BY_STEP) draw_controls_cave_step_hint();
+    else draw_controls_cave_automatic_hint();
     int r = cave_info->rows;
     int c = cave_info->columns;
-/*
-    mvaddch(BORDER_TOP, BORDER_LEFT, ACS_ULCORNER);
-    mvaddch(BORDER_TOP, BORDER_LEFT + c * 2, ACS_URCORNER);
-    mvaddch(BORDER_TOP + r * 2, BORDER_LEFT, ACS_LLCORNER);*/
     for(int i = 0; i < r; i++) {
       for(int j = 0; j < c; j++) {
         if(cave_info->matrix[i][j])
           mvaddch(BORDER_TOP + i, BORDER_LEFT + j, ACS_BOARD);
+        else
+          mvaddch(BORDER_TOP + i, BORDER_LEFT + j, '.');
       }
     }
   }

@@ -203,7 +203,7 @@ int handle_maze_input(int c, UserInfo *u_info, MazeInfo *m_info) {
   return res;
 }
 
-int handle_cave_input(int c/*, CaveInfo *c_info*/) {
+int handle_cave_input(int c, CaveInfo *c_info) {
   int res = OK;
   switch (c) {
     case 'q':
@@ -218,6 +218,10 @@ int handle_cave_input(int c/*, CaveInfo *c_info*/) {
     case 'B':
       res = BACK;
       break;
+    case 10:
+      if(c_info->gen_mode == STEP_BY_STEP) {
+        generate_cave(c_info);
+      }
   }
   return res;
 }
@@ -307,7 +311,9 @@ int cave_display_state(CaveInfo *c_info) {
   int res = OK;
   while(res == OK) {
     draw_cave(c_info);
-    res = handle_cave_input(getch());
+    res = handle_cave_input(getch(), c_info);
+    timeout(1);
+    generate_automatic(c_info);
     refresh();
   }
   clear();
@@ -340,7 +346,9 @@ int cave_open_file_mode_picked(int mode) {
     cave_info.gen_mode = (genmode == 0) ? AUTOMATIC : STEP_BY_STEP;
     if(genmode == 0) {
       clear();
-      display_size_input_menu("Gen Time Delay:", 2, &cave_info.time_delay, 10, 100000);
+      int tm = 0;
+      display_size_input_menu("Gen Time Delay:", 2, &tm, 10, 1000);
+      cave_info.time_delay = tm;
     }
     clear();
     res = cave_display_state(&cave_info);

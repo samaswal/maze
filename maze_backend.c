@@ -50,7 +50,7 @@ void destroy_maze_struct(MazeInfo *m_info) {
   m_info = NULL;
 }
 
-int is_correct_maze(MazeInfo *m_info) {
+int is_correct_maze(const MazeInfo *m_info) {
   int res = 1;
   if(!(m_info && m_info->matrix1 && m_info->matrix2 && m_info->track_matrix && m_info->columns > 0 && m_info->rows > 0)) res = 0;
   return res;
