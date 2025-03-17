@@ -7,6 +7,9 @@ int init_cave_struct(CaveInfo *cave_info, int r, int c) {
   if(cave_info && res == OK) {
     cave_info->rows = r;
     cave_info->columns = c;
+    cave_info->birth_limit = 0;
+    cave_info->death_limit = 0;
+    cave_info->time_delay = 0;
     cave_info->matrix = (int **)calloc(r, sizeof(int *));
     if(!cave_info->matrix) res = MALLOC_ERR;
     if(res == OK) {
@@ -40,7 +43,7 @@ int is_correct_cave(CaveInfo *c_info) {
     return res;
 }
 
-void generate_new_cave(CaveInfo *c_info) {
+void generate_new_cave_primal(CaveInfo *c_info) {
   if(is_correct_cave(c_info)) {
     srand(time(NULL));
     for(int i = 0; i < c_info->rows; i++) {
@@ -54,7 +57,7 @@ void generate_new_cave(CaveInfo *c_info) {
 int generate_cave_file(char *filename, int rows, int columns, CaveInfo *c_info) {
     int res = init_cave_struct(c_info, rows, columns);
     if(res == OK) {
-        generate_new_cave(c_info);
+        generate_new_cave_primal(c_info);
         res = write_cave_file(c_info, filename);
 
     }
@@ -72,6 +75,35 @@ int write_cave_file(CaveInfo *c_info, char *fileName) {
                 fprintf(f, "%d ", c_info->matrix[i][j]);
             }
             fprintf(f, "\n");
+        }
+    }
+    if(f) fclose(f);
+    return res;
+}
+
+int init_cave_from_file(CaveInfo *c_info, char *fileName) {
+    int res = OK;
+    FILE *f;
+    int r, c;
+    f = fopen(fileName, "r");
+    if(!f) res = INPUT_ERR;
+    if(res == OK) {
+        if(fscanf(f, "%d", &r) != 1 || r < 0 || r > 50) res = INPUT_ERR;
+        if(fscanf(f, "%d", &c) != 1 || c < 0 || c > 50) res = INPUT_ERR;
+    }
+    if(res == OK) {
+        res = init_cave_struct(c_info, r, c);
+    }
+    if(res == OK) {
+        for(int i = 0; i < r; i++) {
+            for(int j = 0; j < c; j++) {
+                int sc = fscanf(f, "%d", &c_info->matrix[i][j]);
+                if(sc != 1) {
+                    res = INPUT_ERR;
+                    break;
+                }
+            }
+            if(res == INPUT_ERR) break;
         }
     }
     if(f) fclose(f);

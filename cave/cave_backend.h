@@ -6,9 +6,10 @@
 
 int init_cave_struct(CaveInfo *cave_info, int r, int c);
 void destroy_cave_struct(CaveInfo *c_info);
-void generate_new_cave(CaveInfo *c_info);
+void generate_new_cave_primal(CaveInfo *c_info);
 int generate_cave_file(char *filename, int rows, int columns, CaveInfo *c_info);
 int write_cave_file(CaveInfo *c_info, char *fileName);
+int init_cave_from_file(CaveInfo *c_info, char *filename);
 int is_correct_cave(CaveInfo *c_info);
 
 #endif

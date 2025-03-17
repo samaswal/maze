@@ -11,6 +11,11 @@
 
 #include <ncurses.h>
 
+typedef enum CaveGenMode {
+    AUTOMATIC,
+    STEP_BY_STEP
+} CaveGenMode;
+
 typedef struct MazeInfo {
     int rows;
     int columns;
@@ -22,7 +27,12 @@ typedef struct MazeInfo {
 typedef struct CaveInfo {
     int rows;
     int columns;
+    int birth_limit;
+    int death_limit;
+    CaveGenMode gen_mode;
+    int time_delay;
     int **matrix;
+
 } CaveInfo;
 
 typedef struct MazeUserInfo {

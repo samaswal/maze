@@ -19,7 +19,8 @@ void draw_track(MazeInfo *m_info);
 void display_modes_menu(int selected);
 void display_files_modes_menu(int selected);
 void display_filename_input_menu(const char *prompt, char *filename);
-void display_size_input_menu(const char *prompt, int row, int *val);
+void display_cave_gen_mode_menu(int selected);
+void display_size_input_menu(const char *prompt, int row, int *val, int min, int max);
 void draw_controls_maze_hint();
 void draw_cave(CaveInfo *cave_info);
 

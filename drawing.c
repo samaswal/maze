@@ -215,6 +215,36 @@ void display_modes_menu(int selected) {
   delwin(menu_win);
 }
 
+void display_cave_gen_mode_menu(int selected) {
+  int max_y, max_x;
+  getmaxyx(stdscr, max_y, max_x);  // Get screen dimensions
+
+  int width = 30, height = 8;  // Set the dialog box size
+  int start_y = (max_y - height) / 2;  // Center the window vertically
+  int start_x = (max_x - width) / 2;   // Center the window horizontally
+
+  WINDOW *menu_win = newwin(height, width, start_y, start_x);
+  box(menu_win, 0, 0);  // Draw a border around the window
+
+  mvwprintw(menu_win, 1, 1, "Choose mode:");
+
+  const char *modes[] = {"Automatic", "StepByStep"};
+  for (int i = 0; i < 2; i++) {
+    if (i == selected) {
+      wattron(menu_win, A_REVERSE); // Invert colors for the selected item
+    }
+    mvwprintw(menu_win, i + 2, 1, "%s", modes[i]);
+    if (i == selected) {
+      wattroff(menu_win, A_REVERSE); // Turn off color inversion
+    }
+  }
+
+  wrefresh(menu_win);  // Refresh the window to show content
+  refresh();
+  delwin(menu_win);
+}
+
+
 void display_files_modes_menu(int selected) {
   int max_y, max_x;
   getmaxyx(stdscr, max_y, max_x);
@@ -260,8 +290,8 @@ void display_filename_input_menu(const char *prompt, char *filename) {
 
 
 
-void display_size_input_menu(const char *prompt, int row, int *val) {
-  char num[4];
+void display_size_input_menu(const char *prompt, int row, int *val, int min, int max) {
+  char num[10];
   int max_y, max_x;
   getmaxyx(stdscr, max_y, max_x);
 
@@ -275,14 +305,20 @@ void display_size_input_menu(const char *prompt, int row, int *val) {
     mvwprintw(input_win, 1, 1, prompt);
   wrefresh(input_win);
   echo();
-  mvwgetnstr(input_win, row, 1, num, 20);
+  mvwgetnstr(input_win, row, 1, num, 4);
   noecho();
   *val = atoi(num);
-  while(*val < 4 || *val > 50) {
-    mvwprintw(stdscr, 1, 1, "Incorrect size! Size should be from 4 to 50!");
+  while(*val < min || *val > max) {
+    wclear(input_win);
+    mvwprintw(stdscr, 1, 1, "Incorrect size! Size should be from %d to %d!", min, max);
+    memset(num, '\0', 9);
     refresh();
+    box(input_win, 0, 0);
+    if(*prompt != '\0')
+      mvwprintw(input_win, 1, 1, prompt);
+    wrefresh(input_win);
     echo();
-    mvwgetnstr(input_win, row, 1, num, 20);
+    mvwgetnstr(input_win, row, 1, num, 9);
     noecho();
     *val = atoi(num);
   }

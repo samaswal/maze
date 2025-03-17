@@ -262,7 +262,22 @@ int file_mode_chosing(int *mode) {
   return res;
 }
 
-
+void cave_gen_mode_choosing(int *genmode) {
+  int res = OK, key = 0;
+  display_cave_gen_mode_menu(0);
+  refresh();
+  while(res == OK) {
+    display_cave_gen_mode_menu(*genmode);
+    key = getch();
+    if (key == KEY_UP && *genmode > 0) {
+      *genmode = 0;
+    } else if (key == KEY_DOWN && *genmode < 2) {
+      *genmode = 1;
+    } else if (key == 10) {
+      res = EXIT;
+    }
+  }
+}
 
 int maze_output_from_file() {
   int res = OK;
@@ -288,6 +303,53 @@ int maze_output_from_file() {
   return res;
 }
 
+int cave_display_state(CaveInfo *c_info) {
+  int res = OK;
+  while(res == OK) {
+    draw_cave(c_info);
+    res = handle_cave_input(getch());
+    refresh();
+  }
+  clear();
+  return res;
+}
+
+int cave_open_file_mode_picked(int mode) {
+  int res = OK;
+  CaveInfo cave_info;
+  char filename[40];
+  int genmode = 0;
+  if(mode == 1) { //open file mode
+    display_filename_input_menu("Filename:", filename);
+    res = init_cave_from_file(&cave_info, filename);
+    clear();
+  }
+  else if(mode == 0) { //generate file mode
+    int row = 0, col = 0;
+    display_size_input_menu("Rows:", 2, &row, 4, 50);
+    display_size_input_menu("Columns:", 2, &col, 4, 50);
+    display_filename_input_menu("Filename:", filename);
+    res = generate_cave_file(filename, row, col, &cave_info);
+    clear();
+  }
+  if(res == OK) {
+    display_size_input_menu("Birth limit:", 2, &cave_info.birth_limit, 0, 7);
+    display_size_input_menu("Death limit:", 2, &cave_info.death_limit, 0, 7);
+    clear();
+    cave_gen_mode_choosing(&genmode);
+    cave_info.gen_mode = (genmode == 0) ? AUTOMATIC : STEP_BY_STEP;
+    if(genmode == 0) {
+      clear();
+      display_size_input_menu("Gen Time Delay:", 2, &cave_info.time_delay, 10, 100000);
+    }
+    clear();
+    res = cave_display_state(&cave_info);
+  }
+  clear();
+  if(res != INPUT_ERR && res != MALLOC_ERR) destroy_cave_struct(&cave_info);
+  return res;
+}
+
 int maze_generation_mode_picked() {
   int res = OK;
   MazeInfo maze_info;
@@ -295,8 +357,8 @@ int maze_generation_mode_picked() {
   while(res == OK) {
     int row = 0, col = 0;
     char filename[40];
-    display_size_input_menu("Rows:", 2, &row);
-    display_size_input_menu("Columns:", 3, &col);
+    display_size_input_menu("Rows:", 2, &row, 4, 50);
+    display_size_input_menu("Columns:", 3, &col, 4, 50);
     display_filename_input_menu("Filename:", filename);
     res = generate_maze_file(filename, row, col, &maze_info);
     if(res == OK) init_user_info(&user_info, &maze_info);
@@ -338,36 +400,13 @@ int process_maze_mode() {
   return res;
 }
 
-int cave_generation_mode_picked() {
-  int res = OK;
-  CaveInfo cave_info;
-  //UserInfo user_info;
-  while(res == OK) {
-    int row = 0, col = 0;
-    char filename[40];
-    display_size_input_menu("Rows:", 2, &row);
-    display_size_input_menu("Columns:", 3, &col);
-    display_filename_input_menu("Filename:", filename);
-    res = generate_cave_file(filename, row, col, &cave_info);
-    clear();
-    while(res == OK) {
-      draw_cave(&cave_info);
-      res = handle_cave_input(getch());
-      refresh();
-    }
-    clear();
-    if(res != INPUT_ERR && res != MALLOC_ERR) destroy_cave_struct(&cave_info);
-  }
-  return res;
-}
-
 int process_cave_mode() {
   clear();
   int res = OK, opening_mode = 0; // generate or open existing cave file
   while(res != EXIT && res != BACK) {
     res = file_mode_chosing(&opening_mode);
-    if(res == OK && opening_mode == 0) {
-      res = cave_generation_mode_picked();
+    if(res == OK) {
+      res = cave_open_file_mode_picked(opening_mode);
       if(res == INPUT_ERR)
         mvwprintw(stdscr, 0, 0, "No such file");
       else if(res == MALLOC_ERR)
