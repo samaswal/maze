@@ -26,10 +26,12 @@ void generate_cave(CaveInfo *c_info) {
 
 void generate_automatic(CaveInfo *c_info) {
   if(is_correct_cave(c_info) && c_info->gen_mode == AUTOMATIC) {
-    clock_t t = clock();
-    if((t - c_info->time) * 1000 / CLOCKS_PER_SEC > c_info->time_delay) {
+    struct timeval t;
+    gettimeofday(&t, NULL);
+    long long cur_t = t.tv_sec * 1000 + t.tv_usec / 1000;
+    if((cur_t - c_info->time) > c_info->time_delay) {
       generate_cave(c_info);
-      c_info->time = t;
+      c_info->time = cur_t;
     }
   }
 }

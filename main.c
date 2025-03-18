@@ -4,11 +4,6 @@
 #include "structs.h"
 #include "tracking.h"
 
-#include <ncurses.h>
-#include <unistd.h>
-#include <string.h>
-#include <locale.h>
-
 void print_help() {
   printf("Usage:\n"
          "-p - Set points mode\n"
@@ -18,6 +13,30 @@ void print_help() {
          "-g <filename> -r <int 4 to 50> -c <int 4 to 50> or - generate maze file\n"
          "-r <int 4 to 50> - new maze rows number\n"
          "-c <int 4 to 50> - new maze columns number\n");
+}
+
+int create_dir_if_not_exists(const char *path) {
+  struct stat st;
+  int res = OK;
+  int is_exist = 1;
+  if(stat(path, &st) == 0) {
+    is_exist = S_ISDIR(st.st_mode);
+  }
+  if(is_exist == 1) {
+    res = !mkdir(path, 0755);
+  }
+  return res;
+}
+
+int is_correct_name(const char *filename) {
+  int res = OK;
+  char *forbid_sym;
+  if(filename == NULL) res = NAMING_ERR;
+  if(res == OK) {
+    forbid_sym = strpbrk(filename, ",./\\\'\"");
+    if(forbid_sym != NULL) res = NAMING_ERR;
+  }
+  return res;
 }
 
 void print_error(int code) {
@@ -33,66 +52,79 @@ void print_error(int code) {
 
 int init_maze_from_file(MazeInfo *m_info, char *fileName) {
   int res = OK;
-  FILE *f;
-  int r, c;
-  f = fopen(fileName, "r");
-  if(!f) res = INPUT_ERR;
+  res = is_correct_name(fileName);
   if(res == OK) {
-    if(fscanf(f, "%d", &r) != 1 || r < 0 || r > 50) res = INPUT_ERR;
-    if(fscanf(f, "%d", &c) != 1 || c < 0 || c > 50) res = INPUT_ERR;
-  }
-  if(res == OK) {
-    res = init_maze_struct(m_info, r, c);
-  }
-  if(res == OK) {
-    for(int i = 0; i < r; i++) {
-      for(int j = 0; j < c; j++) {
-        int sc = fscanf(f, "%d", &m_info->matrix1[i][j]);
-        if(sc != 1) {
-          res = INPUT_ERR;
-          break;
-        }
-      }
-      if(res == INPUT_ERR) break;
+    char path[50] = "mazes/";
+    strcat(path, fileName);
+    strcat(path, ".maze");
+    FILE *f;
+    int r, c;
+    f = fopen(path, "r");
+    if(!f) res = INPUT_ERR;
+    if(res == OK) {
+      if(fscanf(f, "%d", &r) != 1 || r < 0 || r > 50) res = INPUT_ERR;
+      if(fscanf(f, "%d", &c) != 1 || c < 0 || c > 50) res = INPUT_ERR;
     }
-  }
-  if(res == OK) {
-    for(int i = 0; i < r; i++) {
-      for(int j = 0; j < c; j++) {
-        int sc = fscanf(f, "%d", &m_info->matrix2[i][j]);
-        if(sc != 1) {
-          res = INPUT_ERR;
-          break;
-        }
-      }
-      if(res == INPUT_ERR) break;
+    if(res == OK) {
+      res = init_maze_struct(m_info, r, c);
     }
+    if(res == OK) {
+      for(int i = 0; i < r; i++) {
+        for(int j = 0; j < c; j++) {
+          int sc = fscanf(f, "%d", &m_info->matrix1[i][j]);
+          if(sc != 1) {
+            res = INPUT_ERR;
+            break;
+          }
+        }
+        if(res == INPUT_ERR) break;
+      }
+    }
+    if(res == OK) {
+      for(int i = 0; i < r; i++) {
+        for(int j = 0; j < c; j++) {
+          int sc = fscanf(f, "%d", &m_info->matrix2[i][j]);
+          if(sc != 1) {
+            res = INPUT_ERR;
+            break;
+          }
+        }
+        if(res == INPUT_ERR) break;
+      }
+    }
+    if(f) fclose(f);
   }
-  if(f) fclose(f);
   return res;
 }
 
 int write_maze_file(MazeInfo *m_info, char *fileName) {
   int res = OK;
-  FILE *f = fopen(fileName, "w");
-  if(!f) res = INPUT_ERR;
-  else {
-    fprintf(f, "%d %d\n", m_info->rows, m_info->columns);
-    for(int i = 0; i < m_info->rows; i++) {
-      for(int j = 0; j < m_info->columns; j++) {
-        fprintf(f, "%d ", m_info->matrix1[i][j]);
+  char path[50] = "mazes/";
+  create_dir_if_not_exists("mazes");
+  if(res == OK) res = is_correct_name(fileName);
+  if(res == OK) {
+    strcat(path, fileName);
+    strcat(path, ".maze");
+    FILE *f = fopen(path, "w");
+    if(!f) res = INPUT_ERR;
+    else {
+      fprintf(f, "%d %d\n", m_info->rows, m_info->columns);
+      for(int i = 0; i < m_info->rows; i++) {
+        for(int j = 0; j < m_info->columns; j++) {
+          fprintf(f, "%d ", m_info->matrix1[i][j]);
+        }
+        fprintf(f, "\n");
       }
       fprintf(f, "\n");
-    }
-    fprintf(f, "\n");
-    for(int i = 0; i < m_info->rows; i++) {
-      for(int j = 0; j < m_info->columns; j++) {
-        fprintf(f, "%d ", m_info->matrix2[i][j]);
+      for(int i = 0; i < m_info->rows; i++) {
+        for(int j = 0; j < m_info->columns; j++) {
+          fprintf(f, "%d ", m_info->matrix2[i][j]);
+        }
+        fprintf(f, "\n");
       }
-      fprintf(f, "\n");
     }
+    if(f) fclose(f);
   }
-  if(f) fclose(f);
   return res;
 }
 
@@ -309,10 +341,11 @@ int maze_output_from_file() {
 
 int cave_display_state(CaveInfo *c_info) {
   int res = OK;
+  cave_set_timer(c_info);
   while(res == OK) {
     draw_cave(c_info);
+    timeout(10);
     res = handle_cave_input(getch(), c_info);
-    timeout(1);
     generate_automatic(c_info);
     refresh();
   }
@@ -419,6 +452,8 @@ int process_cave_mode() {
         mvwprintw(stdscr, 0, 0, "No such file");
       else if(res == MALLOC_ERR)
         mvwprintw(stdscr, 0, 0, "Memory allocation failed");
+      if(res == NAMING_ERR)
+        mvwprintw(stdscr, 0, 0, "Incorrect naming. Forbidden symbols:,./\"\'\\");
     }
   }
   return res;

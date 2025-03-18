@@ -8,9 +8,18 @@
 #define HELP 3
 #define EXIT 4
 #define BACK 5
+#define MKDIR_ERR 6
+#define NAMING_ERR 7
 
 #include <ncurses.h>
 #include <time.h>
+#include <string.h>
+//#include <cstddef>
+#include <ncurses.h>
+#include <unistd.h>
+#include <locale.h>
+#include <sys/stat.h>
+
 
 typedef enum CaveGenMode {
     AUTOMATIC,
@@ -31,8 +40,8 @@ typedef struct CaveInfo {
     int birth_limit;
     int death_limit;
     CaveGenMode gen_mode;
-    clock_t time_delay;
-    clock_t time;
+    int time_delay;
+    long long time;
     int **matrix;
 
 } CaveInfo;
@@ -53,6 +62,8 @@ typedef struct MazeUserInfo {
 int is_correct_maze(const MazeInfo *m_info);
 int is_correct_cave(const CaveInfo *c_info);
 
+int create_dir_if_not_exists(const char *path);
+int is_correct_name(const char *filename);
 void clear_matr(int **matr, int rows, int cols);
 
 #endif
