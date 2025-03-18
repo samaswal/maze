@@ -18,12 +18,12 @@ void print_help() {
 int create_dir_if_not_exists(const char *path) {
   struct stat st;
   int res = OK;
-  int is_exist = 1;
+  int is_exist = 0;
   if(stat(path, &st) == 0) {
     is_exist = S_ISDIR(st.st_mode);
   }
-  if(is_exist == 1) {
-    res = !mkdir(path, 0755);
+  if(is_exist == 0) {
+    res = mkdir(path, 0755);
   }
   return res;
 }
@@ -100,7 +100,7 @@ int init_maze_from_file(MazeInfo *m_info, char *fileName) {
 int write_maze_file(MazeInfo *m_info, char *fileName) {
   int res = OK;
   char path[50] = "mazes/";
-  create_dir_if_not_exists("mazes");
+  res = create_dir_if_not_exists("mazes");
   if(res == OK) res = is_correct_name(fileName);
   if(res == OK) {
     strcat(path, fileName);

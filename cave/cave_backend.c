@@ -75,7 +75,7 @@ int generate_cave_file(char *filename, int rows, int columns, CaveInfo *c_info) 
 int write_cave_file(const CaveInfo *c_info, char *fileName) {
     int res = OK;
     char path[50] = "caves/";
-    create_dir_if_not_exists("caves");
+    res = create_dir_if_not_exists("caves");
     if(res == OK) res = is_correct_name(fileName);
       if(res == OK) {
         strcat(path, fileName);
