@@ -33,7 +33,7 @@ int is_correct_name(const char *filename) {
   char *forbid_sym;
   if(filename == NULL) res = NAMING_ERR;
   if(res == OK) {
-    forbid_sym = strpbrk(filename, ",./\\\'\"");
+    forbid_sym = strpbrk(filename, " ,./\\\'\"");
     if(forbid_sym != NULL) res = NAMING_ERR;
   }
   return res;
@@ -42,10 +42,13 @@ int is_correct_name(const char *filename) {
 void print_error(int code) {
   switch (code) {
     case MALLOC_ERR:
-      perror("Malloc error");
+      mvwprintw(stdscr, 0, 0, "Memory allocation failed");
       break;
     case INPUT_ERR:
-      perror("Incorrect input");
+      mvwprintw(stdscr, 0, 0, "No such file");
+      break;
+    case NAMING_ERR:
+      mvwprintw(stdscr, 0, 0, "Incorrect naming. Forbidden symbols: ,./\"\'\\");
       break;
   }
 }
@@ -133,51 +136,6 @@ int generate_maze_file(char *fileName, int rows, int columns, MazeInfo *m_info) 
   if(res == OK) {
     generate_eller(m_info);
     res = write_maze_file(m_info, fileName);
-  }
-  return res;
-}
-
-int get_user_input(int argc, char *argv[], MazeInfo *m_info) {
-  int res = OK;
-  int current_flag = getopt(argc, argv, "pg:f:y:x:");
-  for(; current_flag != -1 && res == OK; current_flag = getopt(argc, argv, "pg:f:y:x:")) {
-    switch (current_flag) {
-      case 'f':
-        if(res == OK)
-          res = init_maze_from_file(m_info, optarg);
-        break;
-      case 'h':
-        res = HELP;
-        print_help();
-        break;
-      case 'g':
-        int row = 0, col = 0;
-        if(res == OK) {
-          printf("Enter new maze rows number:\n");
-          char nm[10];
-          fgets(nm, 10, stdin);
-          row = atoi(nm);
-          while(row < 4 || row > 50) {
-            printf("Rows number should be from 4 to 50!\n");
-            fgets(nm, 10, stdin);
-            row = atoi(nm);
-          }
-          printf("Enter new maze columns number:\n");
-          fgets(nm, 10, stdin);
-          col = atoi(nm);
-          while(col < 4 || col > 50) {
-            printf("Columns number should be from 4 to 50!\n");
-            fgets(nm, 10, stdin);
-            col = atoi(nm);
-          }
-          res = generate_maze_file(optarg, row, col, m_info);
-        }
-        break;
-      default:
-        res = INPUT_ERR;
-        print_help();
-        break;
-    }
   }
   return res;
 }
@@ -425,17 +383,11 @@ int process_maze_mode() {
     res = file_mode_chosing(&maze_mode);
     if(res == OK && maze_mode == 1) {
       res = maze_output_from_file();
-      if(res == INPUT_ERR)
-        mvwprintw(stdscr, 0, 0, "No such file");
-      else if(res == MALLOC_ERR)
-        mvwprintw(stdscr, 0, 0, "Memory allocation failed");
+      if(res != OK) print_error(res);
     }
     else if(res == OK && maze_mode == 0) {
       res = maze_generation_mode_picked();
-      if(res == INPUT_ERR)
-        mvwprintw(stdscr, 0, 0, "No such file");
-      else if(res == MALLOC_ERR)
-        mvwprintw(stdscr, 0, 0, "Memory allocation failed");
+      if(res != OK) print_error(res);
     }
   }
   return res;
@@ -448,12 +400,7 @@ int process_cave_mode() {
     res = file_mode_chosing(&opening_mode);
     if(res == OK) {
       res = cave_open_file_mode_picked(opening_mode);
-      if(res == INPUT_ERR)
-        mvwprintw(stdscr, 0, 0, "No such file");
-      else if(res == MALLOC_ERR)
-        mvwprintw(stdscr, 0, 0, "Memory allocation failed");
-      if(res == NAMING_ERR)
-        mvwprintw(stdscr, 0, 0, "Incorrect naming. Forbidden symbols:,./\"\'\\");
+      if(res != OK) print_error(res);
     }
   }
   return res;

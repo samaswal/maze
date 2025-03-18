@@ -3,3 +3,10 @@ maze.out
 mazes
 caves
 build
+cave_backend.o cave_generation.o drawing.o main.o maze_backend.o tracking.o
+cave_backend.o
+cave_generation.o
+drawing.o
+main.o
+maze_backend.o
+tracking.o
