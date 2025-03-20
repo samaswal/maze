@@ -6,7 +6,7 @@ int init_ml_maze_from_file(MLInfo *ml_info, char *fileName) {
     int res = OK;
     res = is_correct_name(fileName);
     if(res == OK) {
-        char path[50] = "qmazes/";
+        char path[50] = "../build/qmazes/";
         strcat(path, fileName);
         strcat(path, ".qmaze");
         FILE *f;

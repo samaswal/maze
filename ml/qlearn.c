@@ -138,9 +138,49 @@ void q_learning(MLInfo *ml_info, int episodes, double alpha/*speed*/, double gam
                 ml_info->agent.y = next_state.y;
                 //printf("%d %d\n", next_state.y, next_state.x);
                 mvprintw(0, 18, "episode: %d | reward: %lf", ep, *act_weight_at(&ml_info->Q[ml_info->agent.y][ml_info->agent.x], action));
-                timeout(10);
+                timeout(20);
                 c = getch();
             }
         }
     }
+}
+
+void test_q_table(MLInfo *ml_info) {
+  if((ml_info->agent.x != ml_info->end_pos.x || ml_info->agent.y != ml_info->end_pos.y)) {
+    Action act = Up;
+    double maxQ = -10000000000.0;
+    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].up > maxQ) {
+        maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].up;
+        act = Up;
+    }
+    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].down > maxQ) {
+        maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].down;
+        act = Down;
+    }
+    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].left > maxQ) {
+        maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].left;
+        act = Left;
+    }
+    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].right > maxQ) {
+        maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].right;
+        act = Right;
+    }
+    switch (act) {
+      case Up:
+        ml_info->agent.y--;
+        break;
+      
+      case Down:
+        ml_info->agent.y++;
+        break;
+        
+      case Left:
+        ml_info->agent.x--;
+        break;
+        
+      case Right:
+        ml_info->agent.x++;
+        break;
+    }
+  }
 }
