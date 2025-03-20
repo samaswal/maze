@@ -57,6 +57,33 @@ typedef struct MazeUserInfo {
     int sPickedY;
 } UserInfo;
 
+typedef enum Action {
+    Up = 0,
+    Down = 1,
+    Left = 2,
+    Right = 3
+} Action;
+
+typedef struct State {
+    int y;
+    int x;
+} State;
+
+typedef struct Actions {
+    double up;
+    double down;
+    double left;
+    double right;
+} Actions;
+
+typedef struct MLInfo {
+    MazeInfo *m_info;
+    Actions **Q;
+    State end_pos;
+    State agent;
+} MLInfo;
+
+
 //typedef struct CaveUserInfo {}
 
 int is_correct_maze(const MazeInfo *m_info);

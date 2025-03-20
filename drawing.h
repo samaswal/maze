@@ -23,5 +23,6 @@ void display_cave_gen_mode_menu(int selected);
 void display_size_input_menu(const char *prompt, int row, int *val, int min, int max);
 void draw_controls_maze_hint();
 void draw_cave(const CaveInfo *cave_info);
+void draw_agent(const MLInfo *ml_info);
 
 #endif

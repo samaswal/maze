@@ -14,5 +14,6 @@ int is_correct_maze(const MazeInfo *m_info);
 void print_matrices(MazeInfo *m_info);
 void unite_set(int *set, int id, int columns);
 int is_horizontable(int index, int *line, int *set, int columns);
+int generate_maze_file(char *fileName, int rows, int columns, MazeInfo *m_info);
 
 #endif

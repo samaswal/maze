@@ -1,33 +1,15 @@
 #ifndef Q_LEARN_H_
 #define Q_LEARN_H_
 
-#include "../maze_backend.h"
+#include <stdlib.h>
+#include "../structs.h"
+#include "../tracking.h"
+#include "../drawing.h"
 
-typedef enum Action {
-  Up = 1,
-  Down = 2,
-  Left = 3,
-  Right = 4
-} Action;
 
-typedef struct State {
-  int y;
-  int x;
-} State;
-
-typedef struct LearnData {
-  int **S;
-  Action **A;
-}
-
-typedef struct MLInfo {
-  int rows;
-  int columns;
-  int **matrix1;
-  int **matrix2;
-  double **Q[4];
-  State end_pos;
-  State start_pos;
-} MLInfo;
+void random_start_pos(MLInfo *ml_info);
+Action choose_action(State agent, Actions **Q, double epsilon);
+void q_learning(MLInfo *ml_info, int episodes, double alpha, double gamma, double epsilon);
+State take_action(MLInfo *ml_info, Action action, double *reward);
 
 #endif

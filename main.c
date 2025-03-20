@@ -15,30 +15,6 @@ void print_help() {
          "-c <int 4 to 50> - new maze columns number\n");
 }
 
-int create_dir_if_not_exists(const char *path) {
-  struct stat st;
-  int res = OK;
-  int is_exist = 0;
-  if(stat(path, &st) == 0) {
-    is_exist = S_ISDIR(st.st_mode);
-  }
-  if(is_exist == 0) {
-    res = mkdir(path, 0755);
-  }
-  return res;
-}
-
-int is_correct_name(const char *filename) {
-  int res = OK;
-  char *forbid_sym;
-  if(filename == NULL) res = NAMING_ERR;
-  if(res == OK) {
-    forbid_sym = strpbrk(filename, " ,./\\\'\"");
-    if(forbid_sym != NULL) res = NAMING_ERR;
-  }
-  return res;
-}
-
 void print_error(int code) {
   switch (code) {
     case MALLOC_ERR:

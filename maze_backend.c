@@ -1,5 +1,29 @@
 #include "maze_backend.h"
 
+int is_correct_name(const char *filename) {
+  int res = OK;
+  char *forbid_sym;
+  if(filename == NULL) res = NAMING_ERR;
+  if(res == OK) {
+    forbid_sym = strpbrk(filename, " ,./\\\'\"");
+    if(forbid_sym != NULL) res = NAMING_ERR;
+  }
+  return res;
+}
+
+int create_dir_if_not_exists(const char *path) {
+  struct stat st;
+  int res = OK;
+  int is_exist = 0;
+  if(stat(path, &st) == 0) {
+    is_exist = S_ISDIR(st.st_mode);
+  }
+  if(is_exist == 0) {
+    res = mkdir(path, 0755);
+  }
+  return res;
+}
+
 int init_maze_struct(MazeInfo *maze_info, int r, int c) {
   int res = OK;
   res = (r > 0 && r <= 50 && c > 0 && c <= 50) ? OK : INPUT_ERR;
@@ -41,13 +65,15 @@ void destroy_maze_struct(MazeInfo *m_info) {
     for(int i = 0; i < m_info->rows; i++) {
       free(m_info->matrix1[i]);
       free(m_info->matrix2[i]);
-      free(m_info->track_matrix[i]);
+      if(m_info->track_matrix && m_info->track_matrix[i])
+        free(m_info->track_matrix[i]);
     }
     free(m_info->matrix1);
     free(m_info->matrix2);
-    free(m_info->track_matrix);
+    if(m_info->track_matrix)
+      free(m_info->track_matrix);
   }
-  m_info = NULL;
+  //m_info = NULL;
 }
 
 int is_correct_maze(const MazeInfo *m_info) {

@@ -1,4 +1,5 @@
 #include "drawing.h"
+#include "ml/qlearn.h"
 #include "structs.h"
 #include <ncurses.h>
 
@@ -358,5 +359,12 @@ void draw_cave(const CaveInfo *cave_info) {
           mvaddch(BORDER_TOP + i, BORDER_LEFT + j, '.');
       }
     }
+  }
+}
+
+void draw_agent(const MLInfo *ml_info) {
+  if(ml_info && ml_info->Q && ml_info->m_info) {
+    mvaddch(BORDER_TOP + ml_info->agent.y * 2 + 1, BORDER_LEFT + ml_info->agent.x * 2 + 1, 'A');
+    mvaddch(BORDER_TOP + ml_info->end_pos.y * 2 + 1, BORDER_LEFT + ml_info->end_pos.x * 2 + 1, 'X');
   }
 }
