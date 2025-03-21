@@ -138,7 +138,7 @@ void q_learning(MLInfo *ml_info, int episodes, double alpha/*speed*/, double gam
                 ml_info->agent.y = next_state.y;
                 //printf("%d %d\n", next_state.y, next_state.x);
                 mvprintw(0, 18, "episode: %d | reward: %lf", ep, *act_weight_at(&ml_info->Q[ml_info->agent.y][ml_info->agent.x], action));
-                timeout(20);
+                timeout(1);
                 c = getch();
             }
         }

@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
       //   refresh();
       // }
     if(flags.generate) {
-      q_learning(&ml_info, 40000, 0.4, 0.9, 0.2);
+      q_learning(&ml_info, 15000, 0.3, 0.9, 0.2);
       if(res != INPUT_ERR && res != MALLOC_ERR) save_q_table(&ml_info, filename);
     }
     else if(flags.loadfile) {
@@ -52,9 +52,9 @@ int main(int argc, char *argv[]) {
     if(res != INPUT_ERR && res != MALLOC_ERR) destroy_maze_ml_struct(&ml_info);
     
     endwin();
-    if(res == INPUT_ERR) printf("print err");
-    if(res == MALLOC_ERR) printf("alloc err");
-    else printf("ERR");
+//    if(res == INPUT_ERR) printf("print err");
+  //  if(res == MALLOC_ERR) printf("alloc err");
+    //else printf("ERR");
   }
   else printf("ERR");
   return 0;
