@@ -5,6 +5,7 @@
 #include "../structs.h"
 #include "../tracking.h"
 #include "../drawing.h"
+#include <getopt.h>
 
 
 void random_start_pos(MLInfo *ml_info);

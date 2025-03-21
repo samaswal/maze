@@ -10,3 +10,4 @@ drawing.o
 main.o
 maze_backend.o
 tracking.o
+a.out
