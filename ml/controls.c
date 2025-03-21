@@ -113,6 +113,7 @@ int handle_maze_ml_input(int c, UserInfo *u_info, MLInfo *ml_info) {
 //      if(pick_point(u_info)) track(m_info, u_info);
 //      else clear_matr(m_info->track_matrix, m_info->rows, m_info->columns);
       if(ml_info) {
+        clear_matr(ml_info->m_info->track_matrix, ml_info->m_info->rows, ml_info->m_info->columns);
         pick_agent_start_point(u_info);
         set_start_pos(ml_info, u_info->fPickedY / 2, u_info->fPickedX / 2);
       }

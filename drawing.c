@@ -51,6 +51,28 @@ int pick_point(UserInfo *u_info) {
   return res;
 }
 
+void mv_curs_left(UserInfo *u_info) {
+  if(u_info->x > 1) u_info->x -= 2;
+}
+
+void mv_curs_right(UserInfo *u_info) {
+  if(u_info->x < u_info->maxX) u_info->x += 2;
+}
+
+void mv_curs_down(UserInfo *u_info) {
+  if(u_info->y < u_info->maxY) u_info->y += 2;
+}
+
+void mv_curs_up(UserInfo *u_info) {
+  if(u_info->y > 1) u_info->y -= 2;
+}
+
+
+void pick_agent_start_point(UserInfo *u_info) {
+  u_info->fPickedX = u_info->x;;
+  u_info->fPickedY = u_info->y;;
+}
+
 void draw_single_cell(const MazeInfo *maze_info, int y, int x) {
   if(maze_info->matrix1[y][x]) {
     if(y == 0 && x + 1 < maze_info->columns) mvaddch(BORDER_TOP + (y * 2), BORDER_LEFT + 1 + ((x * 2) + 1), ACS_TTEE);
@@ -264,7 +286,7 @@ void display_cave_gen_mode_menu(int selected) {
 }
 
 
-void display_files_modes_menu(int selected) {
+void display_files_modes_menu(int selected, const char *prompt, const char *var1, const char *var2) {
   int max_y, max_x;
   getmaxyx(stdscr, max_y, max_x);
   int width = 30, height = 8;
@@ -272,8 +294,8 @@ void display_files_modes_menu(int selected) {
   int start_x = (max_x - width) / 2;
   WINDOW *menu_win = newwin(height, width, start_y, start_x);
   box(menu_win, 0, 0);
-  mvwprintw(menu_win, 1, 1, "Source:");
-  const char *modes[] = {"Generate file", "Choose file", "Back", "Exit"};
+  mvwprintw(menu_win, 1, 1, prompt);
+  const char *modes[] = {var1, var2, "Back", "Exit"};
   for (int i = 0; i < 4; i++) {
     if (i == selected) {
       wattron(menu_win, A_REVERSE); // Invert colors for the selected item

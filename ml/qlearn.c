@@ -146,41 +146,44 @@ void q_learning(MLInfo *ml_info, int episodes, double alpha/*speed*/, double gam
 }
 
 void test_q_table(MLInfo *ml_info) {
-  if((ml_info->agent.x != ml_info->end_pos.x || ml_info->agent.y != ml_info->end_pos.y)) {
-    Action act = Up;
-    double maxQ = -10000000000.0;
-    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].up > maxQ) {
+  if(ml_info && ml_info->Q && ml_info->m_info && ml_info->m_info->track_matrix) {
+    if((ml_info->agent.x != ml_info->end_pos.x || ml_info->agent.y != ml_info->end_pos.y)) {
+      ml_info->m_info->-track_matrix[ml_info->agent.y][ml_info->agent.x] = -(ml_info->agent.x + 1)
+      Action act = Up;
+      double maxQ = -10000000000.0;
+      if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].up > maxQ) {
         maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].up;
         act = Up;
-    }
-    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].down > maxQ) {
+      }
+      if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].down > maxQ) {
         maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].down;
         act = Down;
-    }
-    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].left > maxQ) {
+      }
+      if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].left > maxQ) {
         maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].left;
         act = Left;
-    }
-    if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].right > maxQ) {
+      }
+      if(ml_info->Q[ml_info->agent.y][ml_info->agent.x].right > maxQ) {
         maxQ = ml_info->Q[ml_info->agent.y][ml_info->agent.x].right;
         act = Right;
-    }
-    switch (act) {
-      case Up:
-        ml_info->agent.y--;
-        break;
-      
-      case Down:
-        ml_info->agent.y++;
-        break;
-        
-      case Left:
-        ml_info->agent.x--;
-        break;
-        
-      case Right:
-        ml_info->agent.x++;
-        break;
+      }
+      switch (act) {
+        case Up:
+          ml_info->agent.y--;
+          break;
+          
+        case Down:
+          ml_info->agent.y++;
+          break;
+          
+        case Left:
+          ml_info->agent.x--;
+          break;
+          
+        case Right:
+          ml_info->agent.x++;
+          break;
+      }
     }
   }
 }

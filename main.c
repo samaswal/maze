@@ -3,17 +3,10 @@
 #include "maze_backend.h"
 #include "structs.h"
 #include "tracking.h"
-
-void print_help() {
-  printf("Usage:\n"
-         "-p - Set points mode\n"
-         "-y <int 0 to 49> - point y pos\n"
-         "-x <int 0 to 49> - point x pos\n"
-         "-f <filename> - open file\n"
-         "-g <filename> -r <int 4 to 50> -c <int 4 to 50> or - generate maze file\n"
-         "-r <int 4 to 50> - new maze rows number\n"
-         "-c <int 4 to 50> - new maze columns number\n");
-}
+#include "ml/save_load.h"
+#include "ml/qlearn.h"
+#include "ml/controls.h"
+#include <ncurses.h>
 
 void print_error(int code) {
   switch (code) {
@@ -116,22 +109,6 @@ int generate_maze_file(char *fileName, int rows, int columns, MazeInfo *m_info) 
   return res;
 }
 
-void mv_curs_left(UserInfo *u_info) {
-  if(u_info->x > 1) u_info->x -= 2;
-}
-
-void mv_curs_right(UserInfo *u_info) {
-  if(u_info->x < u_info->maxX) u_info->x += 2;
-}
-
-void mv_curs_down(UserInfo *u_info) {
-  if(u_info->y < u_info->maxY) u_info->y += 2;
-}
-
-void mv_curs_up(UserInfo *u_info) {
-  if(u_info->y > 1) u_info->y -= 2;
-}
-
 int handle_maze_input(int c, UserInfo *u_info, MazeInfo *m_info) {
   int res = OK;
   switch (c) {
@@ -212,12 +189,12 @@ int mode_chosing(int *mode) {
   return res;
 }
 
-int file_mode_chosing(int *mode) {
+int four_variants_choosing(int *mode, const char *prompt, const char *var1, const char *var2) {
   int res = OK, key = 0;
-  display_files_modes_menu(0);
+  display_files_modes_menu(0, prompt, var1, var2);
   refresh();
   while(res == OK) {
-    display_files_modes_menu(*mode);
+    display_files_modes_menu(*mode, prompt, var1, var2);
     key = getch();
     if (key == KEY_UP && *mode > 0) {
       (*mode)--;
@@ -287,7 +264,7 @@ int cave_display_state(CaveInfo *c_info) {
   return res;
 }
 
-int cave_open_file_mode_picked(int mode) {
+int cave_initialize_mode_picked(int mode) {
   int res = OK;
   CaveInfo cave_info;
   char filename[40];
@@ -352,11 +329,40 @@ int maze_generation_mode_picked() {
   return res;
 }
 
+int maze_ml_test_mode_picked() {
+  int res = OK;
+  char filename[40];
+  MLInfo ml_info;
+  MazeInfo m_info;
+  UserInfo u_info;
+  ml_info.m_info = &m_info;
+  while (res == OK) {
+    display_filename_input_menu("Filename:", filename);
+    res = init_ml_maze_from_file(&ml_info, filename);
+    if(res == OK) init_user_info(&u_info, ml_info.m_info);
+    clear();
+    while (res == OK) {
+      timeout(200);
+      draw_maze(ml_info.m_info);
+      draw_cursor(u_info.y, u_info.x);
+      draw_picked_points(&u_info);
+      draw_track(ml_info.m_info);
+      draw_agent(&ml_info);
+      res = handle_maze_ml_input(getch(), &u_info, &ml_info);
+      test_q_table(&ml_info);
+      refresh();
+    }
+    clear();
+    if(res != INPUT_ERR && res != MALLOC_ERR) destroy_maze_ml_struct(&ml_info);
+  }
+  return res;
+}
+
 int process_maze_mode() {
   clear();
   int res = OK, maze_mode = 0;
   while(res != EXIT && res != BACK) {
-    res = file_mode_chosing(&maze_mode);
+    res = four_variants_choosing(&maze_mode, "Source:", "Generate file", "Choose file");
     if(res == OK && maze_mode == 1) {
       res = maze_output_from_file();
       if(res != OK) print_error(res);
@@ -373,9 +379,22 @@ int process_cave_mode() {
   clear();
   int res = OK, opening_mode = 0; // generate or open existing cave file
   while(res != EXIT && res != BACK) {
-    res = file_mode_chosing(&opening_mode);
+    res = four_variants_choosing(&opening_mode, "Source:", "Generate file", "Choose file");
     if(res == OK) {
-      res = cave_open_file_mode_picked(opening_mode);
+      res = cave_initialize_mode_picked(opening_mode);
+      if(res != OK) print_error(res);
+    }
+  }
+  return res;
+}
+
+int process_maze_ml_mode() {
+  clear();
+  int res = OK, ml_mode = 0; // test or generate and learn new
+  while(res != EXIT && res != BACK) {
+    res = four_variants_choosing(&ml_mode, "Mode:", "Generate & learn", "Test");
+    if(res == OK && ml_mode == 1) {
+      res = maze_ml_test_mode_picked();
       if(res != OK) print_error(res);
     }
   }
@@ -401,6 +420,9 @@ int main() {
     }
     else if(res == OK && mode == 1)
       res = process_cave_mode();
+    else if(res == OK && mode == 2) {
+      res = process_maze_ml_mode();
+    }
   }
   endwin();
 }

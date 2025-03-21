@@ -10,7 +10,7 @@ main.o:
 	$(CC) $(CCFLAGS) -c main.c -o main.o
 	
 drawing.o:
-	$(CC) $(CCFLAGS) -c drawing.c -o drawing.o
+	$(CC) $(CCFLAGS) -c drawing.c -o drawing.o -lncurses
 	
 maze_backend.o:
 	$(CC) $(CCFLAGS) -c maze_backend.c -o maze_backend.o
@@ -23,10 +23,19 @@ cave_backend.o:
 
 cave_generation.o:
 	$(CC) $(CCFLAGS) -c cave/cave_generation.c -o cave_generation.o
+	
+controls.o:
+	$(CC) $(CCFLAGS) -c ml/controls.c -o controls.o
+
+qlearn.o:
+	$(CC) $(CCFLAGS) -c ml/qlearn.c -o qlearn.o
+
+save_load.o:
+	$(CC) $(CCFLAGS) -c ml/save_load.c -o save_load.o
 
 	
-install: build_dir main.o drawing.o maze_backend.o tracking.o cave_backend.o cave_generation.o
-	$(CC) $(CCFLAGS) main.o drawing.o maze_backend.o tracking.o cave_backend.o cave_generation.o -o $(BUILD_DIR)/$(EXEC_FILE) -lncurses
+install: build_dir main.o drawing.o maze_backend.o tracking.o cave_backend.o cave_generation.o controls.o qlearn.o save_load.o
+	$(CC) $(CCFLAGS) main.o drawing.o maze_backend.o tracking.o cave_backend.o cave_generation.o controls.o qlearn.o save_load.o -o $(BUILD_DIR)/$(EXEC_FILE) -lncurses
 
 run:
 	cd $(BUILD_DIR) && ./$(EXEC_FILE)
